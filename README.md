@@ -12,8 +12,8 @@ I used the MinGW Gnu Compiler Collection (GCC).
 You must set FTM_HOME environmental variable to run the program.
 
 Windows example commands
-$env:FTM_HOME = "C:\projects\CSE310_C++\ftm_authorizer_cpp"
-echo $env:FTM_HOME
+-$env:FTM_HOME = "C:\projects\CSE310_C++\ftm_authorizer_cpp"
+-echo $env:FTM_HOME
 
 # Useful Websites
 
