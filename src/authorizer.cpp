@@ -18,7 +18,7 @@ private:
 	string expDate;
 	int CVV;
 	double amount;
-	double transactionId;
+	int transactionId;
 	string red;
 	string green;
 	string colorEnd;
@@ -30,7 +30,7 @@ public:
 		expDate = transaction["expDate"].GetString();
 		CVV = transaction["CVV"].GetInt();
 		amount = transaction["amount"].GetDouble();
-		transactionId = transaction["transactionId"].GetDouble();
+		transactionId = transaction["transactionId"].GetInt();
 		red = "\033[31m";
 		green = "\033[32m";
 		colorEnd = "\033[0m";
@@ -61,8 +61,7 @@ public:
 	// Validates card's CVV
 	bool validateCVV() const {
 		vector<int> cvvVector = {934, 237, 123, 321};
-
-		for (int i = 0; cvvVector.size(); i++){
+		for (int i = 0; i < cvvVector.size(); i++){
 			if (CVV == cvvVector[i]){
 				return true;
 			}
@@ -160,8 +159,8 @@ public:
 					if (transaction.HasMember("amount") && transaction["amount"].IsDouble()) {
 						cout << "Amount: " << transaction["amount"].GetDouble() << endl;
 					}
-					if (transaction.HasMember("transactionId") && transaction["transactionId"].IsDouble()) {
-						cout << "Transaction ID: " << transaction["transactionId"].GetDouble() << endl;
+					if (transaction.HasMember("transactionId") && transaction["transactionId"].IsInt()) {
+						cout << "Transaction ID: " << transaction["transactionId"].GetInt() << endl;
 					}
 
 					// Calls instance of Transaction class
