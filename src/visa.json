@@ -1,0 +1,16 @@
+[
+    {
+        "card":"4513684598521459",
+        "expDate":"09/27",
+        "CVV":123,
+        "amount":18.00,
+        "transactionId":1
+    },
+    {
+        "card":"4621584298528455",
+        "expDate":"02/29",
+        "CVV":321,
+        "amount":62.00,
+        "transactionId":2
+    }
+]
