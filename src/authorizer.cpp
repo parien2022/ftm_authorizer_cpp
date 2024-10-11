@@ -36,10 +36,12 @@ public:
 		colorEnd = "\033[0m";
 	}
 
+	// Validates card length
 	bool validateCard() const {
 		return card.length() == 16;
 	}
 
+	// Validates expiration date
 	bool validateExpDate() const {
 		int month, year;
 		sscanf(expDate.c_str(), "%d/%d", &month, &year);
@@ -56,6 +58,7 @@ public:
 		return false;
 	}
 
+	// Validates card's CVV
 	bool validateCVV() const {
 		vector<int> cvvVector = {934, 237, 123, 321};
 
@@ -67,6 +70,7 @@ public:
 		return false;
 	}
 
+	// Calls validations
 	bool authorizeTransaction() const {
 		if (!validateCard()) {
 			cout << red << "Error: Card length is not valid" << colorEnd << endl;
@@ -86,9 +90,9 @@ public:
 		return true;
 	}
 
+	// Writes to a log file
 	void logTransactionOutput(ofstream& outFile, string& auth, const string& file, const string& brand) const {
 		outFile << brand << " transaction with ID: " << transactionId << " - " << auth <<" \033[0m" << endl;
-		cout << "Log has been created in log/transactions.log";
 	}
 
 };
@@ -104,6 +108,7 @@ public:
 		: jsonFiles(_jsonFiles), outputFile(outputFile) {}
 
 	void process(){
+		// File object to write
 		ofstream outfile(outputFile);
 
 		if (!outfile) {
@@ -111,26 +116,32 @@ public:
 			return;
 		}
 
-		//Iterates through each json file(it doesn't modify files, automatically knows file type, files are references)
+		// Iterates through each json file(it doesn't modify files, automatically knows file type, files are references)
 		for (const auto& file : jsonFiles){
+			// File object to read
 			ifstream inFile(file);
 			if (!inFile){
 				cerr << "Error opening input file: " << file << endl;
 				return; 
 			}
-			//Saves the content of the file into "content" variable
+			// Saves the content of the file into "content" variable
 			string content{istreambuf_iterator<char>(inFile), istreambuf_iterator<char>()};
 
-			//RapidJSON class
+			// RapidJSON Document
 			Document transactionJson;
+			// Parses JSON content
 			if (transactionJson.Parse(content.c_str()).HasParseError()) {
 				cerr << "Error Parsing Json in file: " << file << endl;
 				continue;
 			}
+
+			// Takes brand name
+			size_t lastSlash = file.find_last_of("/");
 			size_t position = file.find(".");
-			string brand = file.substr(0, position);
+			string brand = file.substr(lastSlash + 1, position - lastSlash - 1);
 			cout << "\n\033[34m** Processing " << brand << " transactions - ";
 			cout << "Number of transactions: " << transactionJson.Size() << " \033[0m**\n" << endl;
+
 			//if it's an array, iterates through every transaction
 			if (transactionJson.IsArray()){
 				for (int i = 0; i < transactionJson.Size(); i++){
@@ -152,32 +163,55 @@ public:
 					if (transaction.HasMember("transactionId") && transaction["transactionId"].IsDouble()) {
 						cout << "Transaction ID: " << transaction["transactionId"].GetDouble() << endl;
 					}
+
+					// Calls instance of Transaction class
 					Transaction newTransaction(transaction);
+
+					// Checks all validations
 					bool isAuthorized = newTransaction.authorizeTransaction();
 					string auth = (isAuthorized) ? "\033[32mAuthorized" : "\033[31mRejected";
+
+					// Writes to a log output file
 					newTransaction.logTransactionOutput(outfile, auth, file, brand);
 
 					cout << "------------------------------" << endl;
+					
 				}
+				
 			} else {
 				cerr << "Error: expected an array of transactions in file: " << file << endl;
 			}
+			inFile.close();
+			cout << "Log has been created in: " << outputFile << endl;
 		}
+		outfile.close();
 	}
 };
 
 int main(){
-	// Files with transaction data
+
+	// Obtains environmental variable "FTM_HOME"
+	const char* env_var = getenv("FTM_HOME");
+	if (env_var == nullptr) {
+		cerr << "FTM_HOME variable is not defined";
+		return 1;
+	}
+
+	string ftm_home = string(env_var);
+
+	// Creates vector with json files
 	vector<string> jsonFiles = {
-		"visa.json",
-		"master.json"
+		ftm_home + "/src/visa.json",
+		ftm_home + "/src/master.json"
 	};
 
-	// Variable with output file name
-	string outputFile = "../log/transactions.log";
+	// Creates string with log file
+	string outputFile = ftm_home + "/log/transactions.log";
 
+	// Creates an instance of ProcessTrnasaction class
 	ProcessTransaction processTran(jsonFiles, outputFile);
 
+	// Calls procces() function
 	processTran.process();
 
 	return 0;
