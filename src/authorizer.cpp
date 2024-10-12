@@ -103,8 +103,8 @@ private:
 	string outputFile;
 
 public:
-	ProcessTransaction(const vector<string>& _jsonFiles, const string& outputFile)
-		: jsonFiles(_jsonFiles), outputFile(outputFile) {}
+	ProcessTransaction(const vector<string>& _jsonFiles, const string& _outputFile)
+		: jsonFiles(_jsonFiles), outputFile(_outputFile) {}
 
 	void process(){
 		// File object to write
